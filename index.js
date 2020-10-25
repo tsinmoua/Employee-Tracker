@@ -19,6 +19,10 @@ connection.connect(function (err) {
     start();
 });
 
+function capFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 function start() {
     inquirer.prompt({
         name: "action",
@@ -71,7 +75,7 @@ function addADepartment() {
             {
                 name: "confirm",
                 type: "rawlist",
-                message: `Are you sure want to add the department: ${answer.department}`,
+                message: `Are you sure want to add the department: ${capFirstLetter(answer.department)}`,
                 choices:
                     [
                         "Yes",
@@ -84,24 +88,100 @@ function addADepartment() {
                 case "Yes":
                     // console.log("Inserting a new department");
 
-                        connection.query("INSERT INTO department SET ?",
+                    connection.query("INSERT INTO department SET ?",
                         {
-                            name: answer.department,
+                            name: capFirstLetter(answer.department),
                         },
                         function (err, res) {
                             if (err) {
-                                console.log(`There is already a department named ${answer.department}. You will be taken back to the main menu`);
+                                console.log(`\n \n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
                                 return start();
-                            };
-                            console.log(res.affectedRows + ` department named ${answer.department} has been added!\n`);
-                            return start();
+                            } else {
+                                console.log(`\n \n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
+                                return start();
+                            }
                         }
-
                     );
-                    break;
+                case "No, go back":
+                    return addADepartment();
+                case "I don't want to add a department anymore":
+                    return start();
             }
         });
-
     });
+}
 
+function addARole() {
+
+    let deptArray = [];
+
+    connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
+        if (err) throw err;
+        res.forEach(element => {
+            deptArray.push({id: element.id, name: element.name});
+        });
+    })
+
+
+    inquirer.prompt([
+        {
+            name: "role",
+            type: "input",
+            message: "What is the name of the role you want to add?"
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary for that role?",
+            validate: input => {
+                if (input !== "" && input.match(/^\d+(?:\.\d{0,2})?$/) !== null) {
+                    return true;
+                }
+                return "Please enter a valid salary."
+            },
+        },
+        {
+            name: "departmentId",
+            type: "list",
+            message: "What is the department for that role?",
+            choices: deptArray
+        }
+    ])
+    // .then(function (answer) {
+    //     inquirer.prompt(
+    //         {
+    //             name: "confirm",
+    //             type: "rawlist",
+    //             message: `Are you sure want to add the department: ${capFirstLetter(answer.department)}`,
+    //             choices:
+    //                 [
+    //                     "Yes",
+    //                     "No, go back",
+    //                     "I don't want to add a department anymore"
+    //                 ]
+    //         }
+    //     ).then(function (answer2) {
+    //         switch (answer2.confirm) {
+    //             case "Yes":
+    //                 connection.query("INSERT INTO department SET ?",
+    //                     {
+    //                         name: capFirstLetter(answer.department),
+    //                     },
+    //                     function (err, res) {
+    //                         if (err) {
+    //                             console.log(`\n` + `\n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
+    //                             return start();
+    //                         } else {
+    //                             console.log(`\n` + `\n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
+    //                             return start();
+    //                         }
+    //                     }
+    //                 );
+    //             case "No, go back":
+    //                 return addADepartment();
+    //             case "I don't want to add a department anymore":
+    //                 return start();
+    //         }
+    //     });
+    // });
 }
