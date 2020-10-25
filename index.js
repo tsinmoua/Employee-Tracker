@@ -55,9 +55,10 @@ function start() {
                 return viewEmployees();
             case "Update employee roles":
                 return updateEmployeeRoles();
-            case "EXIT":
-                console.log("You have exited the application");
-                connection.end();
+            case "Exit":
+                console.log("You have exited the application.");
+                return connection.end();
+
         }
     });
 }
@@ -147,41 +148,59 @@ function addARole() {
             choices: deptArray
         }
     ])
-    // .then(function (answer) {
-    //     inquirer.prompt(
-    //         {
-    //             name: "confirm",
-    //             type: "rawlist",
-    //             message: `Are you sure want to add the department: ${capFirstLetter(answer.department)}`,
-    //             choices:
-    //                 [
-    //                     "Yes",
-    //                     "No, go back",
-    //                     "I don't want to add a department anymore"
-    //                 ]
-    //         }
-    //     ).then(function (answer2) {
-    //         switch (answer2.confirm) {
-    //             case "Yes":
-    //                 connection.query("INSERT INTO department SET ?",
-    //                     {
-    //                         name: capFirstLetter(answer.department),
-    //                     },
-    //                     function (err, res) {
-    //                         if (err) {
-    //                             console.log(`\n` + `\n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
-    //                             return start();
-    //                         } else {
-    //                             console.log(`\n` + `\n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
-    //                             return start();
-    //                         }
-    //                     }
-    //                 );
-    //             case "No, go back":
-    //                 return addADepartment();
-    //             case "I don't want to add a department anymore":
-    //                 return start();
-    //         }
-    //     });
-    // });
+    .then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to add the role: ${capFirstLetter(answer.role)}, $${answer.salary}, ${answer.departmentId}`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "I don't want to add a role anymore"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+
+                console.log("--------------------ID------------------");
+                // console.log(answer.departmentId.id);
+                let chosenDept = answer.departmentId
+                console.log(chosenDept);
+                const deptID = function (x){
+                    for (let i = 0; i < deptArray.length; i++) {
+                        if (x === deptArray[i].name) {
+                            // console.log(deptArray[i].id);
+                            // console.log(deptArray[i].name);
+                            return deptArray[i].id
+                        }
+                    }
+                }
+                console.log(deptID);
+
+                    connection.query("INSERT INTO role SET ?",
+                        {
+                            title: capFirstLetter(answer.role),
+                            salary: answer.salary,
+                            department_id: deptID(chosenDept)
+                        },
+                        function (err, res) {
+                            if (err) {
+                                console.log(`\n \n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
+                                return start();
+                            } else {
+                                console.log(`\n \n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
+                                return start();
+                            }
+                        }
+                    );
+                case "No, go back":
+                    return addARole();
+                case "I don't want to add a role anymore":
+                    return start();
+            }
+        });
+    });
 }
