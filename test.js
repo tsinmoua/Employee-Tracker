@@ -40,17 +40,17 @@ function start() {
             case "Add a department":
                 return addADepartment();
             case "Add a role":
-                return addARole();
+                addARole();
             case "Add an employee":
-                return addAnEmployee();
+                addAnEmployee();
             case "View departments":
-                return viewDepartments();
+                viewDepartments();
             case "View roles":
-                return viewroles();
+                viewroles();
             case "View employees":
-                return viewEmployees();
+                viewEmployees();
             case "Update employee roles":
-                return updateEmployeeRoles();
+                updateEmployeeRoles();
             case "EXIT":
                 console.log("You have exited the application");
                 connection.end();
@@ -84,7 +84,8 @@ function addADepartment() {
                 case "Yes":
                     // console.log("Inserting a new department");
 
-                        connection.query("INSERT INTO department SET ?",
+                    let query = connection.query(
+                        "INSERT INTO department SET ?",
                         {
                             name: answer.department,
                         },
