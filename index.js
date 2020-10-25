@@ -163,7 +163,7 @@ function addARole() {
                 switch (answer2.confirm) {
                     case "Yes":
 
-                        console.log("--------------------ID------------------");
+                        // console.log("--------------------ID------------------");
                         // console.log(answer.departmentId.id);
                         let chosenDept = answer.departmentId
                         // console.log(chosenDept);
@@ -314,7 +314,7 @@ function addAnEmployee() {
                             manager_id: managerID(chosenManager)
                         },
                         function (err, res) {
-                            if (err){
+                            if (err) {
                                 console.log(err);
                                 return start();
                             }
@@ -328,5 +328,38 @@ function addAnEmployee() {
                     return start();
             }
         });
+    });
+}
+
+function viewDepartments() {
+    connection.query("SELECT * FROM department ORDER BY id;", function (err, res) {
+        if (err) {
+            console.log(err);
+            return start();
+        }
+        console.table(res)
+        return start();
+    });
+}
+
+function viewroles() {
+    connection.query("SELECT * FROM role ORDER BY id;", function (err, res) {
+        if (err) {
+            console.log(err);
+            return start();
+        }
+        console.table(res)
+        return start();
+    });
+}
+
+function viewEmployees() {
+    connection.query("SELECT * FROM employee ORDER BY id;", function (err, res) {
+        if (err) {
+            console.log(err);
+            return start();
+        }
+        console.table(res)
+        return start();
     });
 }
