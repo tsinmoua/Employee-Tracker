@@ -15,6 +15,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
     if (err) throw err;
+    console.log("Connected as ID: " + connection.threadId + "\n");
     start();
 });
 
@@ -22,7 +23,7 @@ function start() {
     inquirer
         .prompt({
             name: "action",
-            type: "list",
+            type: "rawlist",
             message: "What would you like to do?",
             choices:
                 [
@@ -33,7 +34,7 @@ function start() {
                     "View roles",
                     "View employees",
                     "Update employee roles",
-                    "EXIT"
+                    "Exit"
                 ]
         })
         .then(function (answer) {
