@@ -1,5 +1,6 @@
-var mysql = require("mysql");
-var inquirer = require("inquirer");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
+const logo = require('asciiart-logo');
 
 // create the connection information for the sql database
 var connection = mysql.createConnection({
@@ -15,7 +16,15 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
     if (err) throw err;
-    console.log("Connected as ID: " + connection.threadId + "\n");
+    console.log('\x1b[42m%s\x1b[0m', "\n Connected as ID: " + connection.threadId + "\n");
+
+    console.log(logo({
+        name: "Employee Tracker",
+        borderColor: "bold-green",
+        logoColor: "bold-green",
+        font: "DOS Rebel"
+    }).render());
+
     start();
 });
 
