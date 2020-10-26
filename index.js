@@ -97,16 +97,16 @@ function addADepartment() {
                 case "Yes":
                     // console.log("Inserting a new department");
 
-                    connection.query("INSERT INTO department SET ?",
+                    return connection.query("INSERT INTO department SET ?",
                         {
                             name: capFirstLetter(answer.department),
                         },
                         function (err, res) {
                             if (err) {
-                                console.log('\x1b[41m%s\x1b[0m', `\n \n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
+                                console.log('\x1b[41m%s\x1b[0m', `\n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
                                 return start();
                             } else {
-                                console.log('\x1b[42m%s\x1b[0m', `\n \n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
+                                console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
                                 return start();
                             }
                         }
@@ -121,7 +121,6 @@ function addADepartment() {
 }
 
 let deptArray = [];
-
 connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
     if (err) throw err;
     res.forEach(element => {
@@ -150,7 +149,7 @@ function addARole() {
         },
         {
             name: "departmentId",
-            type: "list",
+            type: "rawlist",
             message: "What is the department for that role?",
             choices: deptArray
         }
@@ -160,7 +159,7 @@ function addARole() {
                 {
                     name: "confirm",
                     type: "rawlist",
-                    message: `Are you sure want to add the role: ${capFirstLetter(answer.role)}, $${answer.salary}, ${answer.departmentId}`,
+                    message: `Are you sure want to add the Role: ${capFirstLetter(answer.role)}, Salary: $${answer.salary}, Department: ${answer.departmentId}`,
                     choices:
                         [
                             "Yes",
@@ -185,7 +184,7 @@ function addARole() {
                         }
                         // console.log(deptID(chosenDept));
 
-                        connection.query("INSERT INTO role SET ?",
+                        return connection.query("INSERT INTO role SET ?",
                             {
                                 title: capFirstLetter(answer.role),
                                 salary: answer.salary,
@@ -193,10 +192,10 @@ function addARole() {
                             },
                             function (err, res) {
                                 if (err) {
-                                    console.log('\x1b[41m%s\x1b[0m', `\n \n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
+                                    console.log('\x1b[41m%s\x1b[0m', `\n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
                                     return start();
                                 } else {
-                                    console.log('\x1b[42m%s\x1b[0m', `\n \n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
+                                    console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
                                     return start();
                                 }
                             }
@@ -230,7 +229,7 @@ connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", f
         managerArray.push({ id: element.id, name: element.first_name + " " + element.last_name });
 
     });
-    managerArray.push("This employee doesn't have a manager")
+    managerArray.push("No manager")
     // console.log(managerArray);
 })
 
@@ -262,13 +261,13 @@ function addAnEmployee() {
         },
         {
             name: "roleID",
-            type: "list",
+            type: "rawlist",
             message: "What is the employee's role?",
             choices: roleArray
         },
         {
             name: "managerID",
-            type: "list",
+            type: "rawlist",
             message: "Who is the employee's manager?",
             choices: managerArray
         }
@@ -277,7 +276,7 @@ function addAnEmployee() {
             {
                 name: "confirm",
                 type: "rawlist",
-                message: `Are you sure want to add the employee: ${capFirstLetter(answer.firstName)} ${capFirstLetter(answer.lastName)}, ${answer.roleID}, with the manager: ${answer.managerID}`,
+                message: `Are you sure want to add the Employee: ${capFirstLetter(answer.firstName)} ${capFirstLetter(answer.lastName)}, Role: ${answer.roleID}, Manager: ${answer.managerID}`,
                 choices:
                     [
                         "Yes",
@@ -306,7 +305,7 @@ function addAnEmployee() {
                         for (let i = 0; i < managerArray.length; i++) {
                             if (manager === managerArray[i].name) {
                                 return managerArray[i].id
-                            } else if (manager === "This employee doesn't have a manager") {
+                            } else if (manager === "No manager") {
                                 return null;
                             }
                         }
