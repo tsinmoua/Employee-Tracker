@@ -11,7 +11,7 @@ name VARCHAR(30) UNIQUE NOT NULL
 
 CREATE TABLE role (
 id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(30) NOT NULL,
+title VARCHAR(30) UNIQUE NOT NULL,
 salary DECIMAL NOT NULL,
 department_id INTEGER NOT NULL
 );
@@ -35,8 +35,6 @@ VALUES
     ('Legal');
     
 SELECT * FROM department ORDER BY id;
-DROP TABLE department;
-
    
 INSERT INTO role
 	(title, salary, department_id)
@@ -44,7 +42,7 @@ VALUES
     ('Accountant', 60000, 5),
     ('Engineer', 100000, 1),
 	('Salesperson', 80000, 2),
-    ('Chief HR Officer', 200000, 3),
+    ('HR Officer', 90000, 3),
     ('Lawyer', 100000, 6);
     
 SELECT * FROM role ORDER BY id;
@@ -54,7 +52,9 @@ INSERT INTO employee
 VALUES
 	('John', 'Doe', 1, NULL),
     ('Jane', 'Doe', 2, 1),
-	('Jack', 'Johnson', 3, 1);
+	('Jack', 'Johnson', 3, 1),
+	('Rick', 'Morty', 4, 2),
+	('Tyler', 'Richardson', 5, 3);
     
 SELECT * FROM employee ORDER BY id;
 
