@@ -103,10 +103,10 @@ function addADepartment() {
                         },
                         function (err, res) {
                             if (err) {
-                                console.log(`\n \n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
+                                console.log('\x1b[41m%s\x1b[0m', `\n \n There is already a department named "${capFirstLetter(answer.department)}". You will be taken back to the main menu \n`);
                                 return start();
                             } else {
-                                console.log(`\n \n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
+                                console.log('\x1b[42m%s\x1b[0m', `\n \n ${res.affectedRows} department named "${capFirstLetter(answer.department)}" has been added!\n`);
                                 return start();
                             }
                         }
@@ -120,16 +120,16 @@ function addADepartment() {
     });
 }
 
+let deptArray = [];
+
+connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
+    if (err) throw err;
+    res.forEach(element => {
+        deptArray.push({ id: element.id, name: element.name });
+    });
+})
+
 function addARole() {
-
-    let deptArray = [];
-
-    connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
-        if (err) throw err;
-        res.forEach(element => {
-            deptArray.push({ id: element.id, name: element.name });
-        });
-    })
 
     inquirer.prompt([
         {
@@ -193,10 +193,10 @@ function addARole() {
                             },
                             function (err, res) {
                                 if (err) {
-                                    console.log(`\n \n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
+                                    console.log('\x1b[41m%s\x1b[0m', `\n \n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
                                     return start();
                                 } else {
-                                    console.log(`\n \n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
+                                    console.log('\x1b[42m%s\x1b[0m', `\n \n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
                                     return start();
                                 }
                             }
@@ -210,33 +210,31 @@ function addARole() {
         });
 }
 
+let roleArray = [];
+
+connection.query("SELECT id, title FROM role ORDER BY id", function (err, res) {
+    if (err) throw err;
+    // console.log(res);
+    res.forEach(element => {
+        roleArray.push({ id: element.id, name: element.title });
+    });
+    // console.log(roleArray);
+})
+
+let managerArray = [];
+
+connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", function (err, res) {
+    if (err) throw err;
+    // console.log(res);
+    res.forEach(element => {
+        managerArray.push({ id: element.id, name: element.first_name + " " + element.last_name });
+
+    });
+    managerArray.push("This employee doesn't have a manager")
+    // console.log(managerArray);
+})
 
 function addAnEmployee() {
-
-    let roleArray = [];
-
-    connection.query("SELECT id, title FROM role ORDER BY id", function (err, res) {
-        if (err) throw err;
-        // console.log(res);
-        res.forEach(element => {
-            roleArray.push({ id: element.id, name: element.title });
-        });
-        // console.log(roleArray);
-    })
-
-    let managerArray = [];
-
-    connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", function (err, res) {
-        if (err) throw err;
-        // console.log(res);
-        res.forEach(element => {
-            managerArray.push({ id: element.id, name: element.first_name + " " + element.last_name });
-
-        });
-        managerArray.push("This employee doesn't have a manager")
-        // console.log(managerArray);
-    })
-
     inquirer.prompt([
         {
             name: "firstName",
@@ -327,7 +325,7 @@ function addAnEmployee() {
                                 console.log(err);
                                 return start();
                             }
-                            console.log(`\n ${res.affectedRows} employee named "${capFirstLetter(answer.firstName)} ${capFirstLetter(answer.lastName)}" has been added!\n`);
+                            console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} employee named "${capFirstLetter(answer.firstName)} ${capFirstLetter(answer.lastName)}" has been added!\n`);
                             return start();
                         }
                     );
@@ -371,4 +369,88 @@ function viewEmployees() {
         console.table(res)
         return start();
     });
+}
+
+function updateEmployeeRoles() {
+
+    managerArray.pop()
+
+    inquirer.prompt([
+        {
+            name: "employeeName",
+            type: "rawlist",
+            message: "What is the name of the employee who's role you want to update?",
+            choices: managerArray
+        },
+        {
+            name: "employeeRole",
+            type: "rawlist",
+            message: "What is the new role for the employee?",
+            choices: roleArray
+        },
+    ]).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to update the role of ${answer.employeeName} to ${answer.employeeRole}?`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+
+                    let chosenRole = answer.employeeRole
+                    // console.log(chosenRole);
+                    const roleID = function (role) {
+                        for (let i = 0; i < roleArray.length; i++) {
+                            if (role === roleArray[i].name) {
+                                return roleArray[i].id
+                            }
+                        }
+                    }
+                    // console.log(roleID(chosenRole));
+
+                    let chosenEmployee = answer.employeeName
+                    // console.log(chosenManager);
+                    const employeeID = function (employee) {
+                        for (let i = 0; i < managerArray.length; i++) {
+                            if (employee === managerArray[i].name) {
+                                return managerArray[i].id
+                            }
+                        }
+                    }
+
+                    return connection.query(
+                        "UPDATE employee SET ? WHERE ?",
+                        [
+                            {
+                                role_id: roleID(chosenRole)
+                            },
+                            {
+                                id: employeeID(chosenEmployee)
+                            }
+                        ],
+                        function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                return start();
+                            }
+                            console.log('\x1b[42m%s\x1b[0m', `\n ${answer.employeeName}'s role has been updated to ${answer.employeeRole}! \n`);
+                            return start();
+                        }
+                    )
+
+                case "No, go back":
+                    return updateEmployeeRoles();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    })
 }
