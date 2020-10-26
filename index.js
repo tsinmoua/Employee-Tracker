@@ -5,19 +5,15 @@ const logo = require('asciiart-logo');
 // create the connection information for the sql database
 var connection = mysql.createConnection({
     host: "localhost",
-
     port: 3306,
-
     user: "root",
     password: "root",
-
     database: "employee_tracker_db"
 });
 
 connection.connect(function (err) {
     if (err) throw err;
     console.log('\x1b[42m%s\x1b[0m', "\n Connected as ID: " + connection.threadId + "\n");
-
     console.log(logo({
         name: "Employee Tracker",
         borderColor: "bold-green",
@@ -28,6 +24,7 @@ connection.connect(function (err) {
     start();
 });
 
+// used to capitalize user inputs if not already
 function capFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -67,7 +64,6 @@ function start() {
             case "Exit":
                 console.log("You have exited the application.");
                 return connection.end();
-
         }
     });
 }
@@ -128,87 +124,6 @@ connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
     });
 })
 
-function addARole() {
-
-    inquirer.prompt([
-        {
-            name: "role",
-            type: "input",
-            message: "What is the name of the role you want to add?"
-        },
-        {
-            name: "salary",
-            type: "input",
-            message: "What is the salary for that role?",
-            validate: input => {
-                if (input !== "" && input.match(/^\d+(?:\.\d{0,2})?$/) !== null) {
-                    return true;
-                }
-                return "Please enter a valid salary."
-            },
-        },
-        {
-            name: "departmentId",
-            type: "rawlist",
-            message: "What is the department for that role?",
-            choices: deptArray
-        }
-    ])
-        .then(function (answer) {
-            inquirer.prompt(
-                {
-                    name: "confirm",
-                    type: "rawlist",
-                    message: `Are you sure want to add the Role: ${capFirstLetter(answer.role)}, Salary: $${answer.salary}, Department: ${answer.departmentId}`,
-                    choices:
-                        [
-                            "Yes",
-                            "No, go back",
-                            "Main Menu"
-                        ]
-                }
-            ).then(function (answer2) {
-                switch (answer2.confirm) {
-                    case "Yes":
-
-                        // console.log("--------------------ID------------------");
-                        // console.log(answer.departmentId.id);
-                        let chosenDept = answer.departmentId
-                        // console.log(chosenDept);
-                        const deptID = function (dept) {
-                            for (let i = 0; i < deptArray.length; i++) {
-                                if (dept === deptArray[i].name) {
-                                    return deptArray[i].id
-                                }
-                            }
-                        }
-                        // console.log(deptID(chosenDept));
-
-                        return connection.query("INSERT INTO role SET ?",
-                            {
-                                title: capFirstLetter(answer.role),
-                                salary: answer.salary,
-                                department_id: deptID(chosenDept)
-                            },
-                            function (err, res) {
-                                if (err) {
-                                    console.log('\x1b[41m%s\x1b[0m', `\n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
-                                    return start();
-                                } else {
-                                    console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
-                                    return start();
-                                }
-                            }
-                        );
-                    case "No, go back":
-                        return addARole();
-                    case "Main Menu":
-                        return start();
-                }
-            });
-        });
-}
-
 let roleArray = [];
 
 connection.query("SELECT id, title FROM role ORDER BY id", function (err, res) {
@@ -232,6 +147,84 @@ connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", f
     managerArray.push("No manager")
     // console.log(managerArray);
 })
+
+const correspondingID = function (input, array) {
+    for (let i = 0; i < array.length; i++) {
+        if (input === array[i].name) {
+            return array[i].id
+        } else if (input === "No manager") {
+            return null;
+        }
+    }
+}
+
+function addARole() {
+    inquirer.prompt([
+        {
+            name: "role",
+            type: "input",
+            message: "What is the name of the role you want to add?"
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary for that role?",
+            validate: input => {
+                if (input !== "" && input.match(/^\d+(?:\.\d{0,2})?$/) !== null) {
+                    return true;
+                }
+                return "Please enter a valid salary."
+            },
+        },
+        {
+            name: "departmentId",
+            type: "rawlist",
+            message: "What is the department for that role?",
+            choices: deptArray
+        }
+    ]).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to add the Role: ${capFirstLetter(answer.role)}, Salary: $${answer.salary}, Department: ${answer.departmentId}`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+                    let chosenDept = answer.departmentId
+                    // console.log(chosenDept);
+
+                    return connection.query("INSERT INTO role SET ?",
+                        {
+                            title: capFirstLetter(answer.role),
+                            salary: answer.salary,
+                            department_id: correspondingID(chosenDept, deptArray)
+                        },
+                        function (err, res) {
+                            if (err) {
+                                console.log('\x1b[41m%s\x1b[0m', `\n There is already a role named "${capFirstLetter(answer.role)}". You will be taken back to the main menu \n`);
+                                return start();
+                            } else {
+                                console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} role named "${capFirstLetter(answer.role)}" has been added!\n`);
+                                return start();
+                            }
+                        }
+                    );
+                case "No, go back":
+                    return addARole();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    });
+}
 
 function addAnEmployee() {
     inquirer.prompt([
@@ -288,36 +281,18 @@ function addAnEmployee() {
             switch (answer2.confirm) {
                 case "Yes":
 
-                    let chosenRole = answer.roleID
+                    let chosenRole = answer.roleID;
                     // console.log(chosenRole);
-                    const roleID = function (role) {
-                        for (let i = 0; i < roleArray.length; i++) {
-                            if (role === roleArray[i].name) {
-                                return roleArray[i].id
-                            }
-                        }
-                    }
-                    // console.log(roleID(chosenRole));
 
-                    let chosenManager = answer.managerID
+                    let chosenManager = answer.managerID;
                     // console.log(chosenManager);
-                    const managerID = function (manager) {
-                        for (let i = 0; i < managerArray.length; i++) {
-                            if (manager === managerArray[i].name) {
-                                return managerArray[i].id
-                            } else if (manager === "No manager") {
-                                return null;
-                            }
-                        }
-                    }
-                    // console.log(managerID(chosenManager));
-
+                    
                     return connection.query("INSERT INTO employee SET ?",
                         {
                             first_name: capFirstLetter(answer.firstName),
                             last_name: capFirstLetter(answer.lastName),
-                            role_id: roleID(chosenRole),
-                            manager_id: managerID(chosenManager)
+                            role_id: correspondingID(chosenRole, roleArray),
+                            manager_id: correspondingID(chosenManager, managerArray)
                         },
                         function (err, res) {
                             if (err) {
@@ -360,7 +335,8 @@ function viewroles() {
         department.name AS Department,
         role.salary AS Salary
         FROM role
-            LEFT JOIN department on role.department_id = department.id;`,
+            LEFT JOIN department on role.department_id = department.id
+        ORDER BY department.name;`,
         function (err, res) {
             if (err) {
                 console.log(err);
@@ -383,7 +359,8 @@ function viewEmployees() {
         FROM employee 
             LEFT JOIN role ON employee.role_id = role.id 
             LEFT JOIN department on role.department_id = department.id
-            LEFT JOIN employee manager on manager.id = employee.manager_id;`,
+            LEFT JOIN employee manager on manager.id = employee.manager_id
+        ORDER BY department.name;`,
         function (err, res) {
             if (err) {
                 console.log(err);
