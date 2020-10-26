@@ -338,36 +338,60 @@ function addAnEmployee() {
 }
 
 function viewDepartments() {
-    connection.query("SELECT * FROM department ORDER BY id;", function (err, res) {
-        if (err) {
-            console.log(err);
+    connection.query(
+        `SELECT department.id,
+        department.name AS Department
+        FROM department
+        ORDER BY id;`,
+        function (err, res) {
+            if (err) {
+                console.log(err);
+                return start();
+            }
+            console.table(res)
             return start();
-        }
-        console.table(res)
-        return start();
-    });
+        });
 }
 
 function viewroles() {
-    connection.query("SELECT * FROM role ORDER BY id;", function (err, res) {
-        if (err) {
-            console.log(err);
+    connection.query(
+        `SELECT role.id,
+        role.title AS Title,
+        department.name AS Department,
+        role.salary AS Salary
+        FROM role
+            LEFT JOIN department on role.department_id = department.id;`,
+        function (err, res) {
+            if (err) {
+                console.log(err);
+                return start();
+            }
+            console.table(res)
             return start();
-        }
-        console.table(res)
-        return start();
-    });
+        });
 }
 
 function viewEmployees() {
-    connection.query("SELECT * FROM employee ORDER BY id;", function (err, res) {
-        if (err) {
-            console.log(err);
+    connection.query(
+        `SELECT employee.id,
+        employee.first_name AS FirstName,
+        employee.last_name AS LastName,
+        role.title as Title,
+        department.name AS Department,
+        role.salary AS Salary,
+        CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
+        FROM employee 
+            LEFT JOIN role ON employee.role_id = role.id 
+            LEFT JOIN department on role.department_id = department.id
+            LEFT JOIN employee manager on manager.id = employee.manager_id;`,
+        function (err, res) {
+            if (err) {
+                console.log(err);
+                return start();
+            }
+            console.table(res)
             return start();
-        }
-        console.table(res)
-        return start();
-    });
+        });
 }
 
 function updateEmployeeRoles() {
