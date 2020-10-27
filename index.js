@@ -42,6 +42,7 @@ function start() {
                 "View departments",
                 "View roles",
                 "View employees",
+                "View employees by manager",
                 "Update an employee's role",
                 "Update an employee's manager",
                 "Exit"
@@ -60,6 +61,8 @@ function start() {
                 return viewroles();
             case "View employees":
                 return viewEmployees();
+            case "View employees by manager":
+                return viewEmployeesByManager();
             case "Update an employee's role":
                 return updateEmployeesRole();
             case "Update an employee's manager":
@@ -160,7 +163,7 @@ connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", f
     // console.log(employeeArray);
 })
 
-function correspondingID (input, array) {
+function correspondingID(input, array) {
     for (let i = 0; i < array.length; i++) {
         if (input === array[i].name) {
             return array[i].id
@@ -362,16 +365,16 @@ function viewroles() {
 function viewEmployees() {
     connection.query(
         `SELECT employee.id,
-        employee.first_name AS FirstName,
-        employee.last_name AS LastName,
-        role.title as Title,
+        employee.first_name AS 'First Name',
+        employee.last_name AS 'Last Name',
         department.name AS Department,
+        role.title as Title,
         role.salary AS Salary,
-        CONCAT(manager.first_name, ' ', manager.last_name) AS manager 
+        CONCAT(manager.first_name, ' ', manager.last_name) AS Manager 
         FROM employee 
             LEFT JOIN role ON employee.role_id = role.id 
-            LEFT JOIN department on role.department_id = department.id
-            LEFT JOIN employee manager on manager.id = employee.manager_id
+            LEFT JOIN department ON role.department_id = department.id
+            LEFT JOIN employee manager ON manager.id = employee.manager_id
         ORDER BY department.name;`,
         function (err, res) {
             if (err) {
@@ -381,6 +384,40 @@ function viewEmployees() {
             console.table(res)
             return start();
         });
+}
+
+function viewEmployeesByManager() {
+    inquirer.prompt(
+        {
+            name: "managerName",
+            type: "rawlist",
+            message: "Who is the manager of the employees you want to view?",
+            choices: employeeArray
+        }
+    ).then(function (answer) {
+        connection.query(
+            `SELECT employee.id,
+            employee.first_name AS 'First Name',
+            employee.last_name AS 'Last Name',
+            department.name AS Department,
+            role.title as Title,
+            CONCAT(manager.first_name, ' ', manager.last_name) AS Manager 
+            FROM employee 
+                LEFT JOIN role ON employee.role_id = role.id 
+                LEFT JOIN department ON role.department_id = department.id
+                LEFT JOIN employee manager ON manager.id = employee.manager_id
+                WHERE CONCAT(manager.first_name, ' ', manager.last_name) = ?
+            ORDER BY department.name;`, [answer.managerName],
+            function (err, res) {
+                if (err) {
+                    console.log(err);
+                    return start();
+                }
+                console.table(res)
+                return start();
+            });
+
+    });
 }
 
 function updateEmployeesRole() {
