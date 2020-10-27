@@ -77,7 +77,7 @@ function start() {
             case "Delete an employee":
                 return deleteEmployee();
             case "Exit":
-                console.log("You have exited the application.");
+                console.log('\x1b[42m%s\x1b[0m', "\n You have exited the application.");
                 return connection.end();
         }
     });
