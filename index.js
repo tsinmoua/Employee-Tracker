@@ -42,7 +42,8 @@ function start() {
                 "View departments",
                 "View roles",
                 "View employees",
-                "Update employee roles",
+                "Update an employee's role",
+                "Update an employee's manager",
                 "Exit"
             ]
     }).then(function (answer) {
@@ -59,8 +60,10 @@ function start() {
                 return viewroles();
             case "View employees":
                 return viewEmployees();
-            case "Update employee roles":
-                return updateEmployeeRoles();
+            case "Update an employee's role":
+                return updateEmployeesRole();
+            case "Update an employee's manager":
+                return updateEmployeesManager();
             case "Exit":
                 console.log("You have exited the application.");
                 return connection.end();
@@ -125,7 +128,6 @@ connection.query("SELECT * FROM department ORDER BY id", function (err, res) {
 })
 
 let roleArray = [];
-
 connection.query("SELECT id, title FROM role ORDER BY id", function (err, res) {
     if (err) throw err;
     // console.log(res);
@@ -136,7 +138,6 @@ connection.query("SELECT id, title FROM role ORDER BY id", function (err, res) {
 })
 
 let managerArray = [];
-
 connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", function (err, res) {
     if (err) throw err;
     // console.log(res);
@@ -148,7 +149,18 @@ connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", f
     // console.log(managerArray);
 })
 
-const correspondingID = function (input, array) {
+let employeeArray = [];
+connection.query("SELECT id, first_name, last_name FROM employee ORDER BY id", function (err, res) {
+    if (err) throw err;
+    // console.log(res);
+    res.forEach(element => {
+        employeeArray.push({ id: element.id, name: element.first_name + " " + element.last_name });
+
+    });
+    // console.log(employeeArray);
+})
+
+function correspondingID (input, array) {
     for (let i = 0; i < array.length; i++) {
         if (input === array[i].name) {
             return array[i].id
@@ -286,7 +298,7 @@ function addAnEmployee() {
 
                     let chosenManager = answer.managerID;
                     // console.log(chosenManager);
-                    
+
                     return connection.query("INSERT INTO employee SET ?",
                         {
                             first_name: capFirstLetter(answer.firstName),
@@ -371,16 +383,14 @@ function viewEmployees() {
         });
 }
 
-function updateEmployeeRoles() {
-
-    managerArray.pop()
+function updateEmployeesRole() {
 
     inquirer.prompt([
         {
             name: "employeeName",
             type: "rawlist",
             message: "What is the name of the employee who's role you want to update?",
-            choices: managerArray
+            choices: employeeArray
         },
         {
             name: "employeeRole",
@@ -407,33 +417,18 @@ function updateEmployeeRoles() {
 
                     let chosenRole = answer.employeeRole
                     // console.log(chosenRole);
-                    const roleID = function (role) {
-                        for (let i = 0; i < roleArray.length; i++) {
-                            if (role === roleArray[i].name) {
-                                return roleArray[i].id
-                            }
-                        }
-                    }
-                    // console.log(roleID(chosenRole));
 
                     let chosenEmployee = answer.employeeName
-                    // console.log(chosenManager);
-                    const employeeID = function (employee) {
-                        for (let i = 0; i < managerArray.length; i++) {
-                            if (employee === managerArray[i].name) {
-                                return managerArray[i].id
-                            }
-                        }
-                    }
+                    // console.log(chosenEmployee);
 
                     return connection.query(
                         "UPDATE employee SET ? WHERE ?",
                         [
                             {
-                                role_id: roleID(chosenRole)
+                                role_id: correspondingID(chosenRole, roleArray)
                             },
                             {
-                                id: employeeID(chosenEmployee)
+                                id: correspondingID(chosenEmployee, employeeArray)
                             }
                         ],
                         function (err, res) {
@@ -445,12 +440,75 @@ function updateEmployeeRoles() {
                             return start();
                         }
                     )
-
                 case "No, go back":
-                    return updateEmployeeRoles();
+                    return updateEmployeesRole();
                 case "Main Menu":
                     return start();
             }
         });
     })
 }
+
+function updateEmployeesManager() {
+
+    inquirer.prompt([
+        {
+            name: "employeeName",
+            type: "rawlist",
+            message: "What is the name of the employee who's manager you want to update?",
+            choices: employeeArray
+        },
+        {
+            name: "employeeManager",
+            type: "rawlist",
+            message: "Who is the new manager for the employee?",
+            choices: managerArray
+        },
+    ]).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to update the manager of ${answer.employeeName} to ${answer.employeeManager}?`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+
+                    let chosenEmployee = answer.employeeName
+
+                    let chosenManager = answer.employeeManager
+
+                    return connection.query(
+                        "UPDATE employee SET ? WHERE ?",
+                        [
+                            {
+                                manager_id: correspondingID(chosenManager, managerArray)
+                            },
+                            {
+                                id: correspondingID(chosenEmployee, employeeArray)
+                            }
+                        ],
+                        function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                return start();
+                            }
+                            console.log('\x1b[42m%s\x1b[0m', `\n ${answer.employeeName}'s manager has been updated to ${answer.employeeManager}! \n`);
+                            return start();
+                        }
+                    )
+                case "No, go back":
+                    return updateEmployeesManager();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    })
+};
