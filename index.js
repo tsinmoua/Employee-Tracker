@@ -45,6 +45,9 @@ function start() {
                 "View employees by manager",
                 "Update an employee's role",
                 "Update an employee's manager",
+                "Delete a department",
+                "Delete a role",
+                "Delete an employee",
                 "Exit"
             ]
     }).then(function (answer) {
@@ -67,6 +70,12 @@ function start() {
                 return updateEmployeesRole();
             case "Update an employee's manager":
                 return updateEmployeesManager();
+            case "Delete a department":
+                return deleteDepartment();
+            case "Delete a role":
+                return deleteRole();
+            case "Delete an employee":
+                return deleteEmployee();
             case "Exit":
                 console.log("You have exited the application.");
                 return connection.end();
@@ -174,6 +183,7 @@ function correspondingID(input, array) {
 }
 
 function addARole() {
+
     inquirer.prompt([
         {
             name: "role",
@@ -549,3 +559,138 @@ function updateEmployeesManager() {
         });
     })
 };
+
+function deleteDepartment() {
+
+    inquirer.prompt(
+        {
+            name: "department",
+            type: "rawlist",
+            message: "What is the name of the department you want to delete?",
+            choices: deptArray
+        }
+    ).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to delete the department: ${answer.department}`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+                    return connection.query("DELETE FROM department WHERE name = ?", [answer.department],
+                        function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                return start();
+                            } else {
+                                console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} department named "${answer.department}" has been deleted!\n`);
+                                return start();
+                            }
+                        }
+                    );
+                case "No, go back":
+                    return deleteDepartment();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    });
+}
+
+function deleteRole() {
+
+    inquirer.prompt(
+        {
+            name: "role",
+            type: "rawlist",
+            message: "What is the name of the role you want to delete?",
+            choices: roleArray
+        }
+    ).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to delete the role: ${answer.role}`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+                    return connection.query("DELETE FROM role WHERE name = ?", [answer.role],
+                        function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                return start();
+                            } else {
+                                console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} role named "${answer.role}" has been deleted!\n`);
+                                return start();
+                            }
+                        }
+                    );
+                case "No, go back":
+                    return deleteRole();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    });
+}
+
+function deleteEmployee() {
+
+    inquirer.prompt(
+        {
+            name: "employee",
+            type: "rawlist",
+            message: "What is the name of the employee you want to delete?",
+            choices: employeeArray
+        }
+    ).then(function (answer) {
+        inquirer.prompt(
+            {
+                name: "confirm",
+                type: "rawlist",
+                message: `Are you sure want to delete the employee: ${answer.employee}`,
+                choices:
+                    [
+                        "Yes",
+                        "No, go back",
+                        "Main Menu"
+                    ]
+            }
+        ).then(function (answer2) {
+            switch (answer2.confirm) {
+                case "Yes":
+                    return connection.query("DELETE FROM employee WHERE CONCAT(first_name, ' ', last_name) = ?", [answer.employee],
+                        function (err, res) {
+                            if (err) {
+                                console.log(err);
+                                return start();
+                            } else {
+                                console.log('\x1b[42m%s\x1b[0m', `\n ${res.affectedRows} employee named "${answer.employee}" has been deleted!\n`);
+                                return start();
+                            }
+                        }
+                    );
+                case "No, go back":
+                    return deleteEmployee();
+                case "Main Menu":
+                    return start();
+            }
+        });
+    });
+}
