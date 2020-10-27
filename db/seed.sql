@@ -34,7 +34,6 @@ VALUES
     ('Accounting & Finance'),
     ('Legal');
     
-SELECT * FROM department ORDER BY id;
    
 INSERT INTO role
 	(title, salary, department_id)
@@ -45,16 +44,15 @@ VALUES
     ('HR Officer', 90000, 3),
     ('Lawyer', 100000, 6);
     
-SELECT * FROM role ORDER BY id;
 
 INSERT INTO employee
 	(first_name, last_name, role_id, manager_id)
 VALUES
 	('John', 'Doe', 1, NULL),
-    ('Jane', 'Doe', 2, 1),
-	('Jack', 'Johnson', 3, 1),
-	('Rick', 'Morty', 4, 2),
-	('Tyler', 'Richardson', 5, 3);
-    
-SELECT * FROM employee ORDER BY id;
-
+    ('Jane', 'Doe', 1, 1),
+	('Jack', 'Johnson', 2, 1),
+	('Rick', 'Morty', 2, 1),
+	('Tyler', 'Richardson', 3, NULL),
+	('Abe', 'Lincoln', 3, 5),
+    ('George', 'Washington', 4, 5),
+    ('Benjamin', 'Franklin', 4, 5);
