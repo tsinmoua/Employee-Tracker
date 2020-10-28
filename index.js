@@ -43,6 +43,7 @@ function start() {
                 "View roles",
                 "View employees",
                 "View employees by manager",
+                "View utilized budget by department",
                 "Update an employee's role",
                 "Update an employee's manager",
                 "Delete a department",
@@ -66,6 +67,8 @@ function start() {
                 return viewEmployees();
             case "View employees by manager":
                 return viewEmployeesByManager();
+            case "View utilized budget by department":
+                return viewUtilizedBudget();
             case "Update an employee's role":
                 return updateEmployeesRole();
             case "Update an employee's manager":
@@ -365,12 +368,13 @@ function viewEmployees() {
 }
 
 function viewEmployeesByManager() {
+    connection.query("SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id", function (err, res) {
     inquirer.prompt(
         {
             name: "managerName",
             type: "rawlist",
             message: "Who is the manager of the employees you want to view?",
-            choices: employeeArray
+            choices: res
         }
     ).then(function (answer) {
         connection.query(
@@ -396,6 +400,25 @@ function viewEmployeesByManager() {
             });
 
     });
+})
+}
+
+function viewUtilizedBudget() {
+    connection.query(
+        `SELECT department.name Department, 
+        SUM(role.salary) 'Utilized Budget' 
+        FROM employee 
+        LEFT JOIN role on employee.role_id = role.id 
+        LEFT JOIN department on role.department_id = department.id 
+        GROUP BY department.name;`,
+        function (err, res) {
+            if (err) {
+                console.log(err);
+                return start();
+            }
+            console.table(res)
+            return start();
+        });
 }
 
 function updateEmployeesRole() {

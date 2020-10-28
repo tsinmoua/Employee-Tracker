@@ -27,32 +27,31 @@ manager_id INTEGER
 INSERT INTO department
 	(name)
 VALUES
-    ('Engineering'),
-    ('Sales'),
-    ('Marketing'),
-    ('Human Resources'),
-    ('Accounting & Finance'),
-    ('Legal');
-    
-   
+	('Accounting & Finance'),
+	('Engineering'),
+	('Human Resources'),
+	('Legal'),
+	('Marketing'),
+    ('Sales');
+ 
 INSERT INTO role
 	(title, salary, department_id)
 VALUES
-    ('Accountant', 60000, 5),
-    ('Engineer', 100000, 1),
-	('Salesperson', 80000, 2),
+    ('Accountant', 60000, 1),
+    ('Engineer', 100000, 2),
     ('HR Officer', 90000, 3),
-    ('Lawyer', 100000, 6);
+    ('Lawyer', 100000, 4),
+    ('Marketing Manager', 90000, 5),
+	('Salesperson', 60000, 6);
     
-
 INSERT INTO employee
 	(first_name, last_name, role_id, manager_id)
 VALUES
 	('John', 'Doe', 1, NULL),
     ('Jane', 'Doe', 1, 1),
-	('Jack', 'Johnson', 2, 1),
-	('Rick', 'Morty', 2, 1),
+	('Jack', 'Johnson', 2, NULL),
+	('Rick', 'Morty', 2, 3),
 	('Tyler', 'Richardson', 3, NULL),
-	('Abe', 'Lincoln', 3, 5),
-    ('George', 'Washington', 4, 5),
-    ('Benjamin', 'Franklin', 4, 5);
+	('Abe', 'Lincoln', 4, NULL),
+    ('George', 'Washington', 5, NULL),
+    ('Benjamin', 'Franklin', 6, 7);
